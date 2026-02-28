@@ -38,6 +38,7 @@ jobs:
         with:
           go-version: "1.22"
           cache: true   # Cache downloaded modules between runs — faster CI
+          ache-dependency-path: backend/go.sum
 
       # 3. Static analysis — catches common bugs (off-by-one, unused vars, etc.)
       - name: Run go vet
