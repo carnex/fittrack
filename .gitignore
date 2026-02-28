@@ -30,3 +30,9 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+# Frontend
+node_modules/
+frontend/dist/
+# Test output
+*.out
+coverage.html

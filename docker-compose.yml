@@ -1,0 +1,41 @@
+# docker-compose.yml
+
+services:
+  db:
+    image: postgres:16-alpine        # Use the official Postgres 16 image (alpine = small)
+    restart: unless-stopped
+    env_file: .env                   # Read POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB from .env
+    ports:
+      - "5432:5432"                  # Expose Postgres on your machine at port 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # Persist DB data between restarts
+    healthcheck:                     # Docker will wait until Postgres is actually ready
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy   # Don't start backend until Postgres is ready
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:                     # Named volume — Docker manages where data lives on disk
