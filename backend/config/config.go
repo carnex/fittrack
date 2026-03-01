@@ -5,9 +5,6 @@ import (
 	"os"
 )
 
-// Config holds all application configuration.
-// Using a struct means config is explicit and type-safe —
-// no scattered os.Getenv() calls throughout the codebase.
 type Config struct {
 	DatabaseURL string
 	Port        string
@@ -15,8 +12,6 @@ type Config struct {
 	Env         string
 }
 
-// Load reads environment variables and returns a Config.
-// We call this once at startup in main.go and pass it around.
 func Load() (*Config, error) {
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {

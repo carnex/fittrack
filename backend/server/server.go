@@ -7,9 +7,6 @@ import (
 	"time"
 )
 
-// New creates a configured http.Server.
-// We set timeouts explicitly — without them, slow clients
-// can hold connections open forever and exhaust resources.
 func New(port string, handler http.Handler) *http.Server {
 	return &http.Server{
 		Addr:         fmt.Sprintf(":%s", port),
@@ -20,7 +17,6 @@ func New(port string, handler http.Handler) *http.Server {
 	}
 }
 
-// LogStartup prints a friendly startup message.
 func LogStartup(port, env string) {
 	slog.Info("server starting",
 		"port", port,

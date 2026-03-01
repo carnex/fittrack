@@ -2,16 +2,15 @@ name: Backend CI
 
 # When does this run?
 on:
-  push:          # Every time you push any branch
-  pull_request:  # Every time a PR is opened or updated
+  push:          
+  pull_request:  
 
 jobs:
   test:
     name: Lint & Test
-    runs-on: ubuntu-latest   # GitHub spins up a fresh Ubuntu VM for this
+    runs-on: ubuntu-latest  
 
-    # This is how CI gets a real Postgres — GitHub Actions can run
-    # Docker containers alongside your job as "services"
+   
     services:
       postgres:
         image: postgres:16-alpine
@@ -28,25 +27,20 @@ jobs:
           --health-retries 5
 
     steps:
-      # 1. Check out your code onto the VM
+      
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. Install Go
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: "1.22"
-          cache: true   # Cache downloaded modules between runs — faster CI
+          cache: true   
           cache-dependency-path: backend/go.sum
 
-      # 3. Static analysis — catches common bugs (off-by-one, unused vars, etc.)
       - name: Run go vet
         run: cd backend && go vet ./...
 
-      # 4. Run tests
-      # -race detects data races (two goroutines touching the same memory unsafely)
-      # -count=1 disables test caching so tests always actually run
       - name: Run tests
         env:
           DATABASE_URL: postgres://fittrack:testpassword@localhost:5432/fittrack_test?sslmode=disable
