@@ -1,5 +1,7 @@
 # Makefile
 # Run `make help` to see all commands
+include .env
+export
 
 .PHONY: help dev stop backend test lint
 
@@ -29,3 +31,12 @@ lint:  ## Run Go linter
 
 tidy:  ## Tidy Go modules
 	cd backend && go mod tidy
+
+migrate:  ## Run pending migrations
+	cd backend && goose -dir db/migrations postgres "$(DATABASE_URL)" up
+
+migrate-down:  ## Roll back last migration
+	cd backend && goose -dir db/migrations postgres "$(DATABASE_URL)" down
+
+migrate-status:  ## Show migration status
+	cd backend && goose -dir db/migrations postgres "$(DATABASE_URL)" status

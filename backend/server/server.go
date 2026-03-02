@@ -5,11 +5,19 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/carnex/fittrack/backend/config"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func New(port string, handler http.Handler) *http.Server {
+type AppData struct {
+	Config *config.Config
+	DB     *pgxpool.Pool
+}
+
+func New(app *AppData, handler http.Handler) *http.Server {
 	return &http.Server{
-		Addr:         fmt.Sprintf(":%s", port),
+		Addr:         fmt.Sprintf(":%s", app.Config.Port),
 		Handler:      handler,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,

@@ -2,8 +2,8 @@
 CREATE TABLE sleep (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    start TIMESTAMPTZ NOT NULL,
-    end TIMESTAMPTZ NOT NULL,
+    sleep_start TIMESTAMPTZ NOT NULL,
+    sleep_end TIMESTAMPTZ NOT NULL,
     quality INT,
     note TEXT,
     user_id UUID NOT NULL,
