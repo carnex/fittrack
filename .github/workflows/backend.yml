@@ -1,6 +1,5 @@
 name: Backend CI
 
-# When does this run?
 on:
   push:          
   pull_request:  
