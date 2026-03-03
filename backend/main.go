@@ -36,10 +36,10 @@ func main() {
 		os.Exit(1)
 	}
 	defer dbConn.Close()
-
+	pgStore := store.NewPostgresStore(dbConn)
 	appdata := server.AppData{
 		Config: cfg,
-		DB:     dbConn,
+		Store:  pgStore,
 	}
 
 	r := router.New(&appdata)

@@ -7,9 +7,8 @@ package db
 
 import (
 	"context"
-	"database/sql"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -29,16 +28,16 @@ VALUES (
 type CreateUserParams struct {
 	Username               string
 	Email                  string
-	First                  sql.NullString
-	Last                   sql.NullString
+	First                  pgtype.Text
+	Last                   pgtype.Text
 	Password               string
 	ResetMethod            bool
-	SecurityQuestion       sql.NullString
-	SecurityQuestionAnswer sql.NullString
+	SecurityQuestion       pgtype.Text
+	SecurityQuestionAnswer pgtype.Text
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser,
+	row := q.db.QueryRow(ctx, createUser,
 		arg.Username,
 		arg.Email,
 		arg.First,
@@ -74,13 +73,13 @@ where username = $1
 `
 
 type GetUserByUsernameRow struct {
-	ID       uuid.UUID
+	ID       pgtype.UUID
 	Username string
 	Password string
 }
 
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (GetUserByUsernameRow, error) {
-	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
+	row := q.db.QueryRow(ctx, getUserByUsername, username)
 	var i GetUserByUsernameRow
 	err := row.Scan(&i.ID, &i.Username, &i.Password)
 	return i, err

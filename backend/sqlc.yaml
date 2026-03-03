@@ -7,6 +7,7 @@ sql:
       go:
         package: "db"
         out: "db/gen"
+        sql_package: "pgx/v5"
         overrides:
           - db_type: "numeric"
             go_type: "float64"

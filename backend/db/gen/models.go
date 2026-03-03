@@ -6,42 +6,41 @@ package db
 
 import (
 	"database/sql"
-	"time"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type IntegrationToken struct {
-	ID             uuid.UUID
+	ID             pgtype.UUID
 	Provider       string
-	ProviderUserID sql.NullString
+	ProviderUserID pgtype.Text
 	AccessToken    string
 	RefreshToken   string
-	ExpiresAt      time.Time
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	UserID         uuid.UUID
+	ExpiresAt      pgtype.Timestamptz
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+	UserID         pgtype.UUID
 }
 
 type Meal struct {
-	ID                uuid.UUID
-	CreatedAt         time.Time
-	Date              time.Time
-	FoodName          sql.NullString
+	ID                pgtype.UUID
+	CreatedAt         pgtype.Timestamptz
+	Date              pgtype.Timestamptz
+	FoodName          pgtype.Text
 	MealType          string
 	Quantity          float64
 	Protein           sql.NullFloat64
 	Carbs             sql.NullFloat64
 	Fat               sql.NullFloat64
-	EstimatedCalories sql.NullInt32
-	Note              sql.NullString
-	UserID            uuid.UUID
+	EstimatedCalories pgtype.Int4
+	Note              pgtype.Text
+	UserID            pgtype.UUID
 }
 
 type Measurement struct {
-	ID                uuid.UUID
-	CreatedAt         time.Time
-	Date              time.Time
+	ID                pgtype.UUID
+	CreatedAt         pgtype.Timestamptz
+	Date              pgtype.Timestamptz
 	Weight            sql.NullFloat64
 	Neck              sql.NullFloat64
 	Chest             sql.NullFloat64
@@ -56,74 +55,74 @@ type Measurement struct {
 	RightCalf         sql.NullFloat64
 	LeftCalf          sql.NullFloat64
 	BodyfatPercentage sql.NullFloat64
-	UserID            uuid.UUID
+	UserID            pgtype.UUID
 }
 
 type RaceResult struct {
-	ID                     uuid.UUID
-	CreatedAt              time.Time
+	ID                     pgtype.UUID
+	CreatedAt              pgtype.Timestamptz
 	RaceType               string
-	AgeCategory            sql.NullString
-	AgeCategoryPosition    sql.NullString
+	AgeCategory            pgtype.Text
+	AgeCategoryPosition    pgtype.Text
 	TotalFinishers         int32
-	TotalFinishersCategory sql.NullInt32
-	TypeMultistage         sql.NullBool
+	TotalFinishersCategory pgtype.Int4
+	TypeMultistage         pgtype.Bool
 	EventName              string
-	RaceDate               time.Time
+	RaceDate               pgtype.Timestamptz
 	Distance               float64
 	OverallPosition        int32
 	FinishTime             int32
-	Bib                    sql.NullString
-	Notes                  sql.NullString
-	UserID                 uuid.UUID
+	Bib                    pgtype.Text
+	Notes                  pgtype.Text
+	UserID                 pgtype.UUID
 }
 
 type RaceStage struct {
-	ID            uuid.UUID
-	CreatedAt     time.Time
+	ID            pgtype.UUID
+	CreatedAt     pgtype.Timestamptz
 	StageNumber   int32
 	StageDistance float64
 	StageTime     int32
 	StagePosition int32
-	Note          sql.NullString
-	RaceID        uuid.UUID
+	Note          pgtype.Text
+	RaceID        pgtype.UUID
 }
 
 type Sleep struct {
-	ID         uuid.UUID
-	CreatedAt  time.Time
-	SleepStart time.Time
-	SleepEnd   time.Time
-	Quality    sql.NullInt32
-	Note       sql.NullString
-	UserID     uuid.UUID
+	ID         pgtype.UUID
+	CreatedAt  pgtype.Timestamptz
+	SleepStart pgtype.Timestamptz
+	SleepEnd   pgtype.Timestamptz
+	Quality    pgtype.Int4
+	Note       pgtype.Text
+	UserID     pgtype.UUID
 }
 
 type User struct {
-	ID                     uuid.UUID
-	CreatedAt              time.Time
+	ID                     pgtype.UUID
+	CreatedAt              pgtype.Timestamptz
 	Username               string
 	Email                  string
-	First                  sql.NullString
-	Last                   sql.NullString
-	DateOfBirth            sql.NullTime
+	First                  pgtype.Text
+	Last                   pgtype.Text
+	DateOfBirth            pgtype.Date
 	Password               string
 	ResetMethod            bool
-	SecurityQuestion       sql.NullString
-	SecurityQuestionAnswer sql.NullString
-	UseMetric              sql.NullBool
+	SecurityQuestion       pgtype.Text
+	SecurityQuestionAnswer pgtype.Text
+	UseMetric              pgtype.Bool
 	Height                 sql.NullFloat64
 }
 
 type Workout struct {
-	ID           uuid.UUID
-	CreatedAt    time.Time
+	ID           pgtype.UUID
+	CreatedAt    pgtype.Timestamptz
 	Source       string
 	WorkoutType  string
-	Date         time.Time
+	Date         pgtype.Timestamptz
 	Duration     int32
-	AvgHeartRate sql.NullInt32
-	Calories     sql.NullInt32
-	Notes        sql.NullString
-	UserID       uuid.UUID
+	AvgHeartRate pgtype.Int4
+	Calories     pgtype.Int4
+	Notes        pgtype.Text
+	UserID       pgtype.UUID
 }

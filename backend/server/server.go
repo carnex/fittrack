@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"github.com/carnex/fittrack/backend/config"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/carnex/fittrack/backend/store"
 )
 
 type AppData struct {
 	Config *config.Config
-	DB     *pgxpool.Pool
+	Store  store.Store
 }
 
 func New(app *AppData, handler http.Handler) *http.Server {
