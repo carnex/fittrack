@@ -13,6 +13,7 @@ import (
 	"github.com/carnex/fittrack/backend/config"
 	"github.com/carnex/fittrack/backend/router"
 	"github.com/carnex/fittrack/backend/server"
+	"github.com/carnex/fittrack/backend/service"
 	"github.com/carnex/fittrack/backend/store"
 )
 
@@ -37,9 +38,11 @@ func main() {
 	}
 	defer dbConn.Close()
 	pgStore := store.NewPostgresStore(dbConn)
+	userService := service.NewUserService(pgStore)
 	appdata := server.AppData{
-		Config: cfg,
-		Store:  pgStore,
+		Config:      cfg,
+		Store:       pgStore,
+		UserService: userService,
 	}
 
 	r := router.New(&appdata)

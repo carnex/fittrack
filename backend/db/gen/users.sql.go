@@ -7,62 +7,77 @@ package db
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users ( username, email, first, last, password, reset_method, security_question, security_question_answer)
+INSERT INTO users ( username, email, password, reset_method, security_question, security_question_answer)
 VALUES (
     $1,
     $2,
     $3,
     $4,
     $5,
-    $6,
-    $7,
-    $8
-)RETURNING id, created_at, username, email, first, last, date_of_birth, password, reset_method, security_question, security_question_answer, use_metric, height
+    $6
+)RETURNING id, created_at, username, email, reset_method, use_metric
 `
 
 type CreateUserParams struct {
 	Username               string
 	Email                  string
-	First                  pgtype.Text
-	Last                   pgtype.Text
 	Password               string
 	ResetMethod            bool
-	SecurityQuestion       pgtype.Text
-	SecurityQuestionAnswer pgtype.Text
+	SecurityQuestion       sql.NullString
+	SecurityQuestionAnswer sql.NullString
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
+type CreateUserRow struct {
+	ID          pgtype.UUID
+	CreatedAt   pgtype.Timestamptz
+	Username    string
+	Email       string
+	ResetMethod bool
+	UseMetric   pgtype.Bool
+}
+
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
 	row := q.db.QueryRow(ctx, createUser,
 		arg.Username,
 		arg.Email,
-		arg.First,
-		arg.Last,
 		arg.Password,
 		arg.ResetMethod,
 		arg.SecurityQuestion,
 		arg.SecurityQuestionAnswer,
 	)
-	var i User
+	var i CreateUserRow
 	err := row.Scan(
 		&i.ID,
 		&i.CreatedAt,
 		&i.Username,
 		&i.Email,
-		&i.First,
-		&i.Last,
-		&i.DateOfBirth,
-		&i.Password,
 		&i.ResetMethod,
-		&i.SecurityQuestion,
-		&i.SecurityQuestionAnswer,
 		&i.UseMetric,
-		&i.Height,
 	)
+	return i, err
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+select id, email
+from users
+where email = $1
+`
+
+type GetUserByEmailRow struct {
+	ID    pgtype.UUID
+	Email string
+}
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (GetUserByEmailRow, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i GetUserByEmailRow
+	err := row.Scan(&i.ID, &i.Email)
 	return i, err
 }
 

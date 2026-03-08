@@ -7,12 +7,14 @@ import (
 	"time"
 
 	"github.com/carnex/fittrack/backend/config"
+	"github.com/carnex/fittrack/backend/service"
 	"github.com/carnex/fittrack/backend/store"
 )
 
 type AppData struct {
-	Config *config.Config
-	Store  store.Store
+	Config      *config.Config
+	Store       store.Store
+	UserService *service.UserService
 }
 
 func New(app *AppData, handler http.Handler) *http.Server {

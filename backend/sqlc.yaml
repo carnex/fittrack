@@ -23,3 +23,14 @@ sql:
             go_type:
               import: "database/sql"
               type: "NullFloat64"
+          - db_type: "text"
+            nullable: true
+            go_type:
+              import: "database/sql"
+              type: "NullString"
+          - db_type: "pg_catalog.varchar"
+            nullable: true
+            go_type:
+              import: "database/sql"
+              type: "NullString"
+          

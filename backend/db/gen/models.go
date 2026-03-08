@@ -13,7 +13,7 @@ import (
 type IntegrationToken struct {
 	ID             pgtype.UUID
 	Provider       string
-	ProviderUserID pgtype.Text
+	ProviderUserID sql.NullString
 	AccessToken    string
 	RefreshToken   string
 	ExpiresAt      pgtype.Timestamptz
@@ -26,14 +26,14 @@ type Meal struct {
 	ID                pgtype.UUID
 	CreatedAt         pgtype.Timestamptz
 	Date              pgtype.Timestamptz
-	FoodName          pgtype.Text
+	FoodName          sql.NullString
 	MealType          string
 	Quantity          float64
 	Protein           sql.NullFloat64
 	Carbs             sql.NullFloat64
 	Fat               sql.NullFloat64
 	EstimatedCalories pgtype.Int4
-	Note              pgtype.Text
+	Note              sql.NullString
 	UserID            pgtype.UUID
 }
 
@@ -62,8 +62,8 @@ type RaceResult struct {
 	ID                     pgtype.UUID
 	CreatedAt              pgtype.Timestamptz
 	RaceType               string
-	AgeCategory            pgtype.Text
-	AgeCategoryPosition    pgtype.Text
+	AgeCategory            sql.NullString
+	AgeCategoryPosition    sql.NullString
 	TotalFinishers         int32
 	TotalFinishersCategory pgtype.Int4
 	TypeMultistage         pgtype.Bool
@@ -72,8 +72,8 @@ type RaceResult struct {
 	Distance               float64
 	OverallPosition        int32
 	FinishTime             int32
-	Bib                    pgtype.Text
-	Notes                  pgtype.Text
+	Bib                    sql.NullString
+	Notes                  sql.NullString
 	UserID                 pgtype.UUID
 }
 
@@ -84,7 +84,7 @@ type RaceStage struct {
 	StageDistance float64
 	StageTime     int32
 	StagePosition int32
-	Note          pgtype.Text
+	Note          sql.NullString
 	RaceID        pgtype.UUID
 }
 
@@ -94,7 +94,7 @@ type Sleep struct {
 	SleepStart pgtype.Timestamptz
 	SleepEnd   pgtype.Timestamptz
 	Quality    pgtype.Int4
-	Note       pgtype.Text
+	Note       sql.NullString
 	UserID     pgtype.UUID
 }
 
@@ -103,13 +103,13 @@ type User struct {
 	CreatedAt              pgtype.Timestamptz
 	Username               string
 	Email                  string
-	First                  pgtype.Text
-	Last                   pgtype.Text
+	First                  sql.NullString
+	Last                   sql.NullString
 	DateOfBirth            pgtype.Date
 	Password               string
 	ResetMethod            bool
-	SecurityQuestion       pgtype.Text
-	SecurityQuestionAnswer pgtype.Text
+	SecurityQuestion       sql.NullString
+	SecurityQuestionAnswer sql.NullString
 	UseMetric              pgtype.Bool
 	Height                 sql.NullFloat64
 }
@@ -123,6 +123,6 @@ type Workout struct {
 	Duration     int32
 	AvgHeartRate pgtype.Int4
 	Calories     pgtype.Int4
-	Notes        pgtype.Text
+	Notes        sql.NullString
 	UserID       pgtype.UUID
 }

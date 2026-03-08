@@ -29,10 +29,14 @@ func NewPostgresStore(pool *pgxpool.Pool) *PostgresStore {
 	}
 }
 
-func (s *PostgresStore) CreateUser(ctx context.Context, arg db.CreateUserParams) (db.User, error) {
+func (s *PostgresStore) CreateUser(ctx context.Context, arg db.CreateUserParams) (db.CreateUserRow, error) {
 	return s.queries.CreateUser(ctx, arg)
 }
 
 func (s *PostgresStore) GetUserByUsername(ctx context.Context, username string) (db.GetUserByUsernameRow, error) {
 	return s.queries.GetUserByUsername(ctx, username)
+}
+
+func (s *PostgresStore) GetUserByEmail(ctx context.Context, email string) (db.GetUserByEmailRow, error) {
+	return s.queries.GetUserByEmail(ctx, email)
 }
