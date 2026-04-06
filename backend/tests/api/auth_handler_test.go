@@ -12,6 +12,8 @@ import (
 	"github.com/carnex/fittrack/backend/handlers"
 	"github.com/carnex/fittrack/backend/service"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type MockStore struct {
@@ -32,7 +34,47 @@ func (m *MockStore) CreateUser(ctx context.Context, arg db.CreateUserParams) (db
 	return m.createUserFunc(ctx, arg)
 }
 
+// availableMock — empty database, all registrations succeed
 func availableMock() *MockStore {
+	return &MockStore{
+		getUserByUsernameFunc: func(ctx context.Context, username string) (db.GetUserByUsernameRow, error) {
+			return db.GetUserByUsernameRow{}, pgx.ErrNoRows
+		},
+		getUserByEmailFunc: func(ctx context.Context, email string) (db.GetUserByEmailRow, error) {
+			return db.GetUserByEmailRow{}, pgx.ErrNoRows
+		},
+		createUserFunc: func(ctx context.Context, arg db.CreateUserParams) (db.CreateUserRow, error) {
+			return db.CreateUserRow{}, nil
+		},
+	}
+}
+
+// validUserMock — returns a real bcrypt hash for "password123"
+func validUserMock(t *testing.T) *MockStore {
+	t.Helper()
+	hash, err := bcrypt.GenerateFromPassword([]byte("password123"), bcrypt.DefaultCost)
+	if err != nil {
+		t.Fatalf("failed to hash password: %v", err)
+	}
+	return &MockStore{
+		getUserByUsernameFunc: func(ctx context.Context, username string) (db.GetUserByUsernameRow, error) {
+			return db.GetUserByUsernameRow{
+				ID:       pgtype.UUID{Bytes: [16]byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}, Valid: true},
+				Username: username,
+				Password: string(hash),
+			}, nil
+		},
+		getUserByEmailFunc: func(ctx context.Context, email string) (db.GetUserByEmailRow, error) {
+			return db.GetUserByEmailRow{}, pgx.ErrNoRows
+		},
+		createUserFunc: func(ctx context.Context, arg db.CreateUserParams) (db.CreateUserRow, error) {
+			return db.CreateUserRow{}, nil
+		},
+	}
+}
+
+// userNotFoundMock — simulates username not in DB
+func userNotFoundMock() *MockStore {
 	return &MockStore{
 		getUserByUsernameFunc: func(ctx context.Context, username string) (db.GetUserByUsernameRow, error) {
 			return db.GetUserByUsernameRow{}, pgx.ErrNoRows
@@ -76,7 +118,7 @@ func TestRegisterHandler(t *testing.T) {
 		},
 		{
 			name:       "invalid json body",
-			body:       nil, // we'll send malformed JSON
+			body:       nil,
 			mock:       availableMock(),
 			wantStatus: http.StatusBadRequest,
 		},
@@ -120,7 +162,6 @@ func TestRegisterHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			var reqBody *bytes.Buffer
 			if tt.body == nil {
 				reqBody = bytes.NewBufferString("invalid json{{{")
@@ -130,16 +171,107 @@ func TestRegisterHandler(t *testing.T) {
 
 			req := httptest.NewRequest(http.MethodPost, "/api/auth/register", reqBody)
 			req.Header.Set("Content-Type", "application/json")
-
 			rr := httptest.NewRecorder()
 
 			userService := service.NewUserService(tt.mock)
 			handler := handlers.NewAuthHandler(userService, nil)
-
 			handler.Register(rr, req)
 
 			if rr.Code != tt.wantStatus {
 				t.Errorf("expected status %d got %d — body: %s", tt.wantStatus, rr.Code, rr.Body.String())
+			}
+		})
+	}
+}
+
+func TestLoginHandler(t *testing.T) {
+	tests := []struct {
+		name       string
+		body       map[string]interface{}
+		mock       *MockStore
+		wantStatus int
+		wantToken  bool
+	}{
+		{
+			name: "valid login returns token",
+			body: map[string]interface{}{
+				"Username": "badlinemtb",
+				"Password": "password123",
+			},
+			mock:       nil, // set per test using t
+			wantStatus: http.StatusOK,
+			wantToken:  true,
+		},
+		{
+			name: "username not found returns 401",
+			body: map[string]interface{}{
+				"Username": "doesnotexist",
+				"Password": "password123",
+			},
+			mock:       userNotFoundMock(),
+			wantStatus: http.StatusUnauthorized,
+			wantToken:  false,
+		},
+		{
+			name: "wrong password returns 401",
+			body: map[string]interface{}{
+				"Username": "badlinemtb",
+				"Password": "wrongpassword",
+			},
+			mock:       nil, // set per test using t
+			wantStatus: http.StatusUnauthorized,
+			wantToken:  false,
+		},
+		{
+			name:       "invalid json returns 400",
+			body:       nil,
+			mock:       userNotFoundMock(),
+			wantStatus: http.StatusBadRequest,
+			wantToken:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// build mock — some tests need the bcrypt hash
+			mock := tt.mock
+			if mock == nil {
+				mock = validUserMock(t)
+			}
+
+			// build request body
+			var reqBody *bytes.Buffer
+			if tt.body == nil {
+				reqBody = bytes.NewBufferString("invalid json{{{")
+			} else {
+				reqBody = registerBody(t, tt.body)
+			}
+
+			req := httptest.NewRequest(http.MethodPost, "/api/auth/login", reqBody)
+			req.Header.Set("Content-Type", "application/json")
+			rr := httptest.NewRecorder()
+
+			// wire up handler with both services
+			userService := service.NewUserService(mock)
+			authService := service.NewAuthService(mock, "test-secret-key")
+			handler := handlers.NewAuthHandler(userService, authService)
+			handler.Login(rr, req)
+
+			// assert status code
+			if rr.Code != tt.wantStatus {
+				t.Errorf("expected status %d got %d — body: %s", tt.wantStatus, rr.Code, rr.Body.String())
+			}
+
+			// assert token presence
+			if tt.wantToken {
+				var resp map[string]string
+				if err := json.NewDecoder(rr.Body).Decode(&resp); err != nil {
+					t.Errorf("failed to decode response body: %v", err)
+					return
+				}
+				if resp["token"] == "" {
+					t.Errorf("expected token in response but got empty string")
+				}
 			}
 		})
 	}
