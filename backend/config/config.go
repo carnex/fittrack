@@ -20,7 +20,7 @@ func Load() (*Config, error) {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080" // sensible default
+		port = "8080"
 	}
 
 	jwtSecret := os.Getenv("JWT_SECRET")

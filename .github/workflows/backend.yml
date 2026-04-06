@@ -1,9 +1,10 @@
 name: Backend CI
 
-# When does this run?
 on:
   push:          
   pull_request:  
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   test:
@@ -29,10 +30,10 @@ jobs:
     steps:
       
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v5.3.0
         with:
           go-version: "1.22"
           cache: true   
