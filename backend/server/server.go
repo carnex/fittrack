@@ -15,6 +15,7 @@ type AppData struct {
 	Config      *config.Config
 	Store       store.Store
 	UserService *service.UserService
+	AuthService *service.AuthService
 }
 
 func New(app *AppData, handler http.Handler) *http.Server {

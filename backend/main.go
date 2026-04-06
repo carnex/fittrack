@@ -39,10 +39,12 @@ func main() {
 	defer dbConn.Close()
 	pgStore := store.NewPostgresStore(dbConn)
 	userService := service.NewUserService(pgStore)
+	authService := service.NewAuthService(pgStore, cfg.JWTSecret)
 	appdata := server.AppData{
 		Config:      cfg,
 		Store:       pgStore,
 		UserService: userService,
+		AuthService: authService,
 	}
 
 	r := router.New(&appdata)

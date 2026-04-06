@@ -14,7 +14,6 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// MockStore for handler tests — same pattern as service tests
 type MockStore struct {
 	getUserByUsernameFunc func(ctx context.Context, username string) (db.GetUserByUsernameRow, error)
 	getUserByEmailFunc    func(ctx context.Context, email string) (db.GetUserByEmailRow, error)
@@ -33,7 +32,6 @@ func (m *MockStore) CreateUser(ctx context.Context, arg db.CreateUserParams) (db
 	return m.createUserFunc(ctx, arg)
 }
 
-// availableMock — empty database, all registrations succeed
 func availableMock() *MockStore {
 	return &MockStore{
 		getUserByUsernameFunc: func(ctx context.Context, username string) (db.GetUserByUsernameRow, error) {
@@ -48,7 +46,6 @@ func availableMock() *MockStore {
 	}
 }
 
-// helper — builds a register request body
 func registerBody(t *testing.T, input map[string]interface{}) *bytes.Buffer {
 	t.Helper()
 	body, err := json.Marshal(input)
@@ -123,7 +120,7 @@ func TestRegisterHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// build request body
+
 			var reqBody *bytes.Buffer
 			if tt.body == nil {
 				reqBody = bytes.NewBufferString("invalid json{{{")
@@ -131,21 +128,16 @@ func TestRegisterHandler(t *testing.T) {
 				reqBody = registerBody(t, tt.body)
 			}
 
-			// build request
 			req := httptest.NewRequest(http.MethodPost, "/api/auth/register", reqBody)
 			req.Header.Set("Content-Type", "application/json")
 
-			// build response recorder
 			rr := httptest.NewRecorder()
 
-			// wire up handler with mock store
 			userService := service.NewUserService(tt.mock)
-			handler := handlers.NewUserHandler(userService)
+			handler := handlers.NewAuthHandler(userService, nil)
 
-			// call handler directly — no real HTTP server needed
 			handler.Register(rr, req)
 
-			// assert status code
 			if rr.Code != tt.wantStatus {
 				t.Errorf("expected status %d got %d — body: %s", tt.wantStatus, rr.Code, rr.Body.String())
 			}

@@ -14,7 +14,7 @@ func New(app *server.AppData) http.Handler {
 	r := chi.NewRouter()
 	r.Use(chimiddleware.RequestID)
 	r.Use(chimiddleware.Recoverer)
-	userHandler := handlers.NewUserHandler(app.UserService)
+	userHandler := handlers.NewAuthHandler(app.UserService, app.AuthService)
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -23,6 +23,7 @@ func New(app *server.AppData) http.Handler {
 	r.Route("/api", func(r chi.Router) {
 		r.Route("/auth", func(r chi.Router) {
 			r.Post("/register", userHandler.Register)
+			r.Post("/login", userHandler.Login)
 
 		})
 	})
